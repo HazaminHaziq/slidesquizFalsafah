@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slaid & Kuiz MPU3152 (Mengikut JST Tugasan 1)</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --accent-color: #38bdf8;
+      --accent-hover: #0284c7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --success-color: #22c55e;
+      --warning-color: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .slide-container {
+      width: 100%;
+      max-width: 900px;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      padding: 35px;
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .slide {
+      display: none;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    .slide.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .badge {
+      display: inline-block;
+      background-color: rgba(56, 189, 248, 0.15);
+      color: var(--accent-color);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: var(--accent-color);
+      margin-bottom: 15px;
+      line-height: 1.3;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+      color: var(--text-main);
+      margin-top: 15px;
+      margin-bottom: 10px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 5px;
+    }
+
+    p, li {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    ul, ol {
+      margin-left: 20px;
+      margin-bottom: 15px;
+    }
+
+    strong {
+      color: var(--text-main);
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      margin-top: 15px;
+      margin-bottom: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+    }
+
+    th {
+      background-color: rgba(56, 189, 248, 0.1);
+      color: var(--accent-color);
+    }
+
+    td {
+      color: var(--text-muted);
+    }
+
+    .box-example {
+      background-color: rgba(245, 158, 11, 0.1);
+      border-left: 4px solid var(--warning-color);
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
+
+    .box-example p {
+      color: #fcd34d;
+      margin-bottom: 0;
+      font-size: 0.95rem;
+    }
+
+    .answer-btn {
+      background-color: var(--border-color);
+      color: var(--text-main);
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 15px;
+      transition: background 0.2s;
+    }
+
+    .answer-btn:hover {
+      background-color: var(--accent-color);
+      color: #000;
+    }
+
+    .answer-box {
+      display: none;
+      background-color: rgba(34, 197, 94, 0.1);
+      border: 1px solid var(--success-color);
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+
+    .answer-box p, .answer-box li {
+      color: #86efac;
+      font-size: 0.95rem;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .btn {
+      background-color: var(--accent-color);
+      color: #0f172a;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background-color: var(--accent-hover);
+      color: #fff;
+    }
+
+    .btn:disabled {
+      background-color: var(--border-color);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .page-indicator {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="slide-container">
+    
+    <!-- SLAID 1: TAJUK UTAMA -->
+    <div class="slide active">
+      <span class="badge">MPU3152: Falsafah dan Cabaran Semasa</span>
+      <h1>ULANGKAJI LENGKAP & KUIZ JST TUGASAN 1</h1>
+      <p>Persediaan Menghadapi Ujian Struktur MPU3152 (20 Markah)[cite: 4, 6]</p>
+      
+      <div style="margin-top: 25px;">
+        <h2>Fokus Soalan Mengikut JST:[cite: 6]</h2>
+        <ul>
+          <li><strong>Soalan 1:</strong> Konsep Asas, Ciri & Dimensi Falsafah[cite: 2, 6]</li>
+          <li><strong>Soalan 2:</strong> Membezakan & Mengaplikasikan Cabang Falsafah[cite: 2, 3, 6]</li>
+          <li><strong>Soalan 3:</strong> Epistemologi & Sumber Pengetahuan[cite: 2, 3, 6]</li>
+          <li><strong>Soalan 4:</strong> Falsafah, Pandangan Alam & Pembinaan Peradaban[cite: 2, 5, 6]</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SLAID 2: KONSEP & DIMENSI FALSAFAH -->
+    <div class="slide">
+      <span class="badge">Slaid 1: Konsep & Dimensi</span>
+      <h1>Konsep Asas & 3 Dimensi Falsafah</h1>
+      
+      <ul>
+        <li><strong>Etimologi:</strong> Yunani <em>philosophia</em> (<em>philo</em> = cinta; <em>sophia</em> = kebijaksanaan) &rarr; <strong>"Cinta akan kebijaksanaan"</strong>[cite: 2].</li>
+        <li><strong>Konseptual:</strong> Usaha intelektual yang sistematik, rasional, dan kritis untuk memahami persoalan asas realiti, kewujudan, ilmu, dan nilai[cite: 2].</li>
+      </ul>
+
+      <h2>3 Dimensi Utama Falsafah[cite: 2]:</h2>
+      <ol>
+        <li><strong>Sebagai Ilmu:</strong> Kerangka teori, aliran pemikiran (cth: Idealisme, Pragmatisme)[cite: 2].</li>
+        <li><strong>Sebagai Proses:</strong> Aktiviti menyoal, menaakul, memeriksa andaian, dan menilai hujah[cite: 2].</li>
+        <li><strong>Sebagai Pandangan Hidup:</strong> Kerangka yang memberi arah tindakan & dasar (cth: Falsafah Pendidikan Kebangsaan & Rukun Negara)[cite: 2, 5].</li>
+      </ol>
+    </div>
+
+    <!-- SLAID 3: CABANG-CABANG FALSAFAH -->
+    <div class="slide">
+      <span class="badge">Slaid 2: Cabang Falsafah</span>
+      <h1>Cabang Utama Falsafah & Persoalannya</h1>
+      
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Cabang Falsafah</th>
+              <th>Fokus Utama[cite: 2, 3]</th>
+              <th>Contoh Aplikasi / Persoalan[cite: 2, 3]</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Metafizik / Ontologi</strong></td>
+              <td>Hakikat kewujudan & realiti[cite: 2, 3]</td>
+              <td>Adakah pembelajaran sekadar markah atau perkembangan wujudnya kefahaman?[cite: 3]</td>
+            </tr>
+            <tr>
+              <td><strong>Epistemologi</strong></td>
+              <td>Sifat, sumber & kesahan ilmu[cite: 2, 3]</td>
+              <td>Bagaimanakah kita mengesahkan berita di media sosial itu benar?[cite: 2]</td>
+            </tr>
+            <tr>
+              <td><strong>Logik</strong></td>
+              <td>Prinsip penaakulan betul[cite: 2]</td>
+              <td>Adakah kesimpulan mengikut premis secara sah atau berfalasi?[cite: 2]</td>
+            </tr>
+            <tr>
+              <td><strong>Aksiologi</strong></td>
+              <td>Nilai moral (Etika) & Keindahan (Estetika)[cite: 2, 3]</td>
+              <td>Apakah tindakan beretika dalam isu penggunaan AI dalam penulisan esei?[cite: 2, 3]</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SLAID 4: EPISTEMOLOGI & SUMBER ILMU -->
+    <div class="slide">
+      <span class="badge">Slaid 3: Epistemologi</span>
+      <h1>Sumber Pengetahuan (Epistemologi)</h1>
+      <p>Epistemologi mengkaji cara ilmu diperolehi, disahkan, dan diperiksa batasnya[cite: 2, 3].</p>
+
+      <h2>4 Sumber Pengetahuan Utama[cite: 3]:</h2>
+      <ul>
+        <li><strong>1. Rasionalisme:</strong> Menggunakan akal dan logik (cth: penaakulan matematik)[cite: 3].</li>
+        <li><strong>2. Empirisme:</strong> Menggunakan pancaindera dan pemerhatian (cth: eksperimen, pemerhatian murid)[cite: 3].</li>
+        <li><strong>3. Intuisi / Ilham:</strong> Gerak hati atau idea kreatif secara tiba-tiba (mesti disemak bukti)[cite: 3].</li>
+        <li><strong>4. Wahyu:</strong> Panduan daripada Tuhan menerusi Al-Quran & Sunnah (Perspektif Islam)[cite: 3].</li>
+      </ul>
+    </div>
+
+    <!-- SLAID 5: FALSAFAH, PANDANGAN ALAM & PERADABAN -->
+    <div class="slide">
+      <span class="badge">Slaid 4: Peradaban</span>
+      <h1>Falsafah, Pandangan Alam & Peradaban</h1>
+      
+      <ul>
+        <li><strong>Pandangan Alam (Worldview):</strong> Gambaran menyeluruh tentang Tuhan, manusia, alam, ilmu, dan nilai yang menentukan hala tuju kehidupan[cite: 2, 5].</li>
+        <li><strong>Rantaian Pembinaan Peradaban:</strong> <br>
+          <span style="color: var(--accent-color);">Pandangan Alam &rarr; Ilmu &rarr; Nilai/Adab &rarr; Kepimpinan &rarr; Peradaban</span>[cite: 5]
+        </li>
+      </ul>
+
+      <div class="box-example">
+        <p><strong>Krisis Peradaban (al-Attas)[cite: 5]:</strong><br>
+        Kekeliruan Ilmu &rarr; Kekeliruan Nilai &rarr; Kehilangan Adab &rarr; Krisis Kepimpinan &rarr; Ketidakadilan &rarr; Krisis Peradaban[cite: 5]</p>
+      </div>
+    </div>
+
+    <!-- SLAID 6: KUIZ SOALAN 1 -->
+    <div class="slide">
+      <span class="badge">Kuiz 1 (Subjektif) - 5 Markah</span>
+      <h1>Soalan 1: Konsep & Dimensi Falsafah</h1>
+      
+      <p><strong>(a)</strong> Nyatakan maksud falsafah dari sudut <strong>etimologi</strong> dan berikan satu contoh yang membezakan pengetahuan biasa dengan persoalan falsafah[cite: 2]. <em>(2 Markah)</em></p>
+      <p><strong>(b)</strong> Terangkan tiga dimensi utama falsafah dan berikan contoh bagi dimensi <strong>falsafah sebagai pandangan hidup</strong>[cite: 2]. <em>(3 Markah)</em></p>
+
+      <button class="answer-btn" onclick="toggleAnswer('ans1')">Lihat Skema Jawapan</button>
+      <div id="ans1" class="answer-box">
+        <p><strong>Skema Jawapan:</strong></p>
+        <ul>
+          <li><strong>(a) Etimologi & Contoh:</strong> Berasal daripada Yunani <em>philosophia</em> yang bermaksud <strong>cinta akan kebijaksanaan</strong>[cite: 2]. Contoh: Pengetahuan biasa mengetahui cara fungsi AI, manakala falsafah bertanyakan sama ada penggunaan AI tersebut adil dan beretika[cite: 2].</li>
+          <li><strong>(b) 3 Dimensi:</strong> (1) Falsafah sebagai Ilmu, (2) Falsafah sebagai Proses, (3) Falsafah sebagai Pandangan Hidup[cite: 2]. Contoh Pandangan Hidup: Falsafah Pendidikan Kebangsaan (FPK) atau Rukun Negara[cite: 2, 5].</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SLAID 7: KUIZ SOALAN 2 -->
+    <div class="slide">
+      <span class="badge">Kuiz 2 (Subjektif) - 5 Markah</span>
+      <h1>Soalan 2: Aplikasi Cabang Falsafah</h1>
+      
+      <p><em>Situasi: Sebuah sekolah bercadang melarang penggunaan AI secara mutlak dalam kalangan pelajar kerana bimbang berlaku penipuan akademik[cite: 2, 3].</em></p>
+      <p><strong>(a)</strong> Kenal pasti <strong>dua (2)</strong> cabang falsafah yang relevan untuk menilai situasi ini[cite: 2, 3]. <em>(2 Markah)</em></p>
+      <p><strong>(b)</strong> Jelaskan bagaimana persoalan daripada kedua-dua cabang falsafah tersebut membantu sekolah membuat keputusan yang adil[cite: 2, 3]. <em>(3 Markah)</em></p>
+
+      <button class="answer-btn" onclick="toggleAnswer('ans2')">Lihat Skema Jawapan</button>
+      <div id="ans2" class="answer-box">
+        <p><strong>Skema Jawapan:</strong></p>
+        <ul>
+          <li><strong>(a) Cabang Relevan:</strong> (1) <strong>Epistemologi</strong> dan (2) <strong>Aksiologi (Etika)</strong>[cite: 2, 3].</li>
+          <li><strong>(b) Penjelasan:</strong> 
+            <br>&bull; <em>Epistemologi:</em> Menilai adakah penulisan AI benar-benar mencerminkan kefahaman ilmu pelajar[cite: 3].
+            <br>&bull; <em>Etika:</em> Membantu sekolah menetapkan garis panduan penggunaan AI secara adil, jujur, dan bertanggungjawab[cite: 2, 3].
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SLAID 8: KUIZ SOALAN 3 -->
+    <div class="slide">
+      <span class="badge">Kuiz 3 (Subjektif) - 5 Markah</span>
+      <h1>Soalan 3: Epistemologi & Sumber Ilmu</h1>
+      
+      <p><strong>(a)</strong> Apakah definisi <strong>Epistemologi</strong>?[cite: 2, 3] <em>(1 Markah)</em></p>
+      <p><strong>(b)</strong> Nyatakan <strong>tiga (3)</strong> sumber ilmu utama dan berikan satu contoh aplikasi bagi salah satu sumber ilmu tersebut dalam era digital[cite: 2, 3]. <em>(4 Markah)</em></p>
+
+      <button class="answer-btn" onclick="toggleAnswer('ans3')">Lihat Skema Jawapan</button>
+      <div id="ans3" class="answer-box">
+        <p><strong>Skema Jawapan:</strong></p>
+        <ul>
+          <li><strong>(a) Maksud Epistemologi:</strong> Cabang falsafah yang mengkaji sifat, sumber, struktur, justifikasi, dan batas pengetahuan manusia[cite: 2, 3].</li>
+          <li><strong>(b) Sumber & Aplikasi:</strong> Rasionalisme (akal), Empirisme (pemerhatian/deria), Intuisi/Ilham, Wahyu[cite: 3]. Contoh Aplikasi: Menggunakan sumber Empirisme/Rasionalisme untuk membuat semakan fakta (<em>fact-checking</em>) dan menilai kebenaran maklumat di media sosial sebelum mempercayainya[cite: 2, 3].</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SLAID 9: KUIZ SOALAN 4 -->
+    <div class="slide">
+      <span class="badge">Kuiz 4 (Subjektif) - 5 Markah</span>
+      <h1>Soalan 4: Pandangan Alam & Peradaban</h1>
+      
+      <p><strong>(a)</strong> Terangkan bagaimana <strong>pandangan alam (worldview)</strong> mempengaruhi corak sesebuah peradaban[cite: 2, 5]. <em>(2 Markah)</em></p>
+      <p><strong>(b)</strong> Berdasarkan kerangka Prof. Syed Muhammad Naquib al-Attas, huraikan secara ringkas bagaimana <strong>kekeliruan ilmu</strong> boleh membawa kepada <strong>krisis peradaban</strong>[cite: 5]. <em>(3 Markah)</em></p>
+
+      <button class="answer-btn" onclick="toggleAnswer('ans4')">Lihat Skema Jawapan</button>
+      <div id="ans4" class="answer-box">
+        <p><strong>Skema Jawapan:</strong></p>
+        <ul>
+          <li><strong>(a) Pandangan Alam & Peradaban:</strong> Pandangan alam menentukan cara masyarakat memahami realiti, kebenaran, dan nilai, yang seterusnya dibentuk ke dalam sistem pendidikan, undang-undang, dan institusi sosial peradaban tersebut[cite: 2, 5].</li>
+          <li><strong>(b) Krisis Peradaban (al-Attas):</strong> Kekeliruan ilmu &rarr; Kekeliruan nilai &rarr; Kehilangan adab &rarr; Krisis kepimpinan tidak berwibawa &rarr; Ketidakadilan &rarr; Krisis peradaban runtuh[cite: 5].</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- KAWALAN NAVIGASI -->
+    <div class="controls">
+      <button class="btn" id="prevBtn" onclick="changeSlide(-1)">Sebaliknya</button>
+      <span class="page-indicator" id="pageIndicator">Slaid 1 daripada 9</span>
+      <button class="btn" id="nextBtn" onclick="changeSlide(1)">Seterusnya</button>
+    </div>
+
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pageIndicator = document.getElementById('pageIndicator');
+
+    function updateSlide() {
+      slides.forEach((slide, index) => {
+        slide.classList.remove('active');
+        if (index === currentSlide) {
+          slide.classList.add('active');
+        }
+      });
+
+      pageIndicator.textContent = `Slaid ${currentSlide + 1} daripada ${slides.length}`;
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.disabled = currentSlide === slides.length - 1;
+    }
+
+    function changeSlide(direction) {
+      currentSlide += direction;
+      if (currentSlide < 0) currentSlide = 0;
+      if (currentSlide >= slides.length) currentSlide = slides.length - 1;
+      updateSlide();
+    }
+
+    function toggleAnswer(id) {
+      const box = document.getElementById(id);
+      if (box.style.display === 'block') {
+        box.style.display = 'none';
+      } else {
+        box.style.display = 'block';
+      }
+    }
+
+    // Initialize
+    updateSlide();
+  </script>
+
+</body>
+</html>
